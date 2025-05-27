@@ -35,8 +35,41 @@ export default function Dashboard() {
       const analyzeData = await response.json();
       if (analyzeData.error) throw new Error(analyzeData.error);
 
+       // 2. Fetch Lighthouse scores
+    const lighthouseResponse = await fetch("http://localhost:5000/lighthouse", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+    const lighthouseData = await lighthouseResponse.json();
+
+    const formatMs = (val) => val ? `${Math.round(val)} ms` : "N/A";
+    const formatScore = (val) => val ? `${Math.round(val * 100)}%` : "N/A";
+
+
       setMetrics([...metrics, analyzeData.metrics]);
-      setInsights(analyzeData.insight);
+
+      // Create combined insights string
+    const combinedInsights = `
+AI Insight:
+${analyzeData.insight}
+
+Lighthouse Scores:
+- Performance: ${lighthouseData.performance ? Math.round(lighthouseData.performance * 100) + "%" : "N/A"}
+- SEO: ${lighthouseData.seo ? Math.round(lighthouseData.seo * 100) + "%" : "N/A"}
+- Accessibility: ${lighthouseData.accessibility ? Math.round(lighthouseData.accessibility * 100) + "%" : "N/A"}
+- Best Practices: ${lighthouseData.bestPractices ? Math.round(lighthouseData.bestPractices * 100) + "%" : "N/A"}
+
+Core Web Vitals:
+- FCP (First Contentful Paint): ${formatMs(lighthouseData.fcp)}
+- LCP (Largest Contentful Paint): ${formatMs(lighthouseData.lcp)}
+- CLS (Cumulative Layout Shift): ${lighthouseData.cls ?? "N/A"}
+- Speed Index: ${formatMs(lighthouseData.speedIndex)}
+- TBT (Total Blocking Time): ${formatMs(lighthouseData.tbt)}
+    `.trim();
+
+      
+      setInsights(combinedInsights);
       setUrls([...urls, url]);
       setUrl("");
     } catch (error) {
@@ -45,8 +78,10 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <Card className="w-full max-w-2xl mx-auto">
+    <div className="p-6">
+  <div className="flex flex-col lg:flex-row gap-6">
+    <div className="flex-1 space-y-6">
+      <Card className="w-full max-w-2xl">
         <CardContent className="p-4 space-y-4">
           <h2 className="text-xl font-bold">Enter Website URL</h2>
           <div className="flex gap-2">
@@ -60,14 +95,7 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      <Card className="w-full max-w-4xl mx-auto">
-        <CardContent className="p-4">
-          <h2 className="text-xl font-bold mb-2">AI-Generated Insights</h2>
-          <Textarea readOnly value={insights} className="min-h-[100px]" />
-        </CardContent>
-      </Card>
-
-      <Card className="w-full max-w-4xl mx-auto">
+      <Card className="w-full max-w-4xl">
         <CardContent className="p-4">
           <h2 className="text-xl font-bold mb-4">Website Metrics</h2>
           <ResponsiveContainer width="100%" height={300}>
@@ -82,5 +110,21 @@ export default function Dashboard() {
         </CardContent>
       </Card>
     </div>
+
+    <div className="w-full lg:w-1/3">
+      <Card className="h-full">
+        <CardContent className="p-4 space-y-4">
+          <h2 className="text-xl font-bold">AI-Generated Insights</h2>
+          <Textarea
+            readOnly
+            value={insights}
+            className="min-h-[400px] h-full resize-none"
+          />
+        </CardContent>
+      </Card>
+    </div>
+  </div>
+</div>
+
   );
 }
