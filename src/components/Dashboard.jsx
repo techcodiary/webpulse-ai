@@ -20,12 +20,12 @@ export default function Dashboard() {
   const [insights, setInsights] = useState("");
   const [metrics, setMetrics] = useState([]);
   const [lighthouse, setLighthouse] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
+
 
   const handleSubmit = async () => {
     if (!url) return;
-
     try {
-
       // 1. Fetch AI insights + basic metrics
       const response = await fetch("http://localhost:5000/analyze", {
         method: "POST",
@@ -46,6 +46,7 @@ export default function Dashboard() {
     });
     const lighthouseData = await lighthouseResponse.json();
     setLighthouse(lighthouseData);
+    setRecommendations(lighthouseData.recommendations || []);
 
     setMetrics([...metrics, analyzeData.metrics]);
     
@@ -94,7 +95,20 @@ export default function Dashboard() {
 
     {/* Right Column */}
     <div className="space-y-6 w-full">
-            {lighthouse && <LighthouseVitalsCard data={lighthouse} />}
+      {lighthouse && <LighthouseVitalsCard data={lighthouse} />}
+      {recommendations.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-xl font-bold mb-2">AI Recommendations</h2>
+          <ul className="space-y-3">
+            {recommendations.map((rec, index) => (
+              <li key={index} className="p-4 rounded-md bg-yellow-50 border-l-4 border-yellow-400 shadow">
+                <h3 className="text-lg font-semibold">{rec.title}</h3>
+                <p className="text-sm text-gray-700">{rec.description}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <Card className="h-full w-full">
         <CardContent className="p-4 space-y-4">
