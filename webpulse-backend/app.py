@@ -14,6 +14,8 @@ from bs4 import BeautifulSoup
 from azure.ai.textanalytics import TextAnalyticsClient
 from azure.core.credentials import AzureKeyCredential
 
+load_dotenv()
+
 LIGHTHOUSE_API = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
 
 OPENAI_API_VERSION = os.getenv("OPENAI_API_VERSION") 
@@ -22,7 +24,6 @@ OPENAI_API_VERSION = os.getenv("OPENAI_API_VERSION")
 AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
 AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
 
-load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -32,7 +33,7 @@ client = AzureOpenAI()
 
 # Initialize Azure AI Text Analytics client
 def authenticate_client():
-    credential = AzureKeyCredential(AZURE_OPENAI_API_KEY)
+    credential = AzureKeyCredential("AZURE_OPENAI_API_KEY")
     client = TextAnalyticsClient(endpoint=AZURE_OPENAI_ENDPOINT, credential=credential)
     return client 
 
